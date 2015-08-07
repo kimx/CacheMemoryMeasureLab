@@ -14,8 +14,39 @@ namespace CacheMemoryMeasureLab
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            MeasureMemory(MemoryCache.Default);
+            MonitorCache();
+            //GetCacheMeasure(MemoryCache.Default);
+
+            //MeasureMemoryBySql();
+            Console.Read();
+        }
+
+        private static void MeasureMemoryBySql()
+        {
+            string connStr = "Data Source=KIM-MSI\\KIMSSQLSERVER;Initial Catalog=MVWDataBase;User ID=sa;Password=mis123;MultipleActiveResultSets=True";
+            var sqlCache = new SqlCache(connStr);
+            MeasureMemory(sqlCache);
+            GetCacheMeasure(sqlCache);
+
+
+        }
+
+        private static void MonitorCache()
+        {
+            while (true)
+            {
+                Console.WriteLine(MemoryCacheMonitor.IsInMaintenanceMode());
+                System.Threading.Thread.Sleep(1000);
+            }
+        }
+
+        private static void MeasureMemory(ObjectCache cache)
+        {
+            System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
+            sh.Start();
             int perUserCacheCount = 100;
-            int onlineUsers = 2000;
+            int onlineUsers = 20;
             MemWatch mw = new MemWatch();
 
             List<UserMenuInfo> menus = new List<UserMenuInfo>();
@@ -25,14 +56,28 @@ namespace CacheMemoryMeasureLab
             }
             Console.WriteLine(mw.MemorySizeChangeInKB);
             mw.Start();
-            var mem = MemoryCache.Default;
+            CacheItemPolicy policy = new CacheItemPolicy();
+            policy.AbsoluteExpiration = new DateTimeOffset(DateTime.Now.AddDays(1));
             foreach (var menu in menus)
             {
-                mem.Add(menu.PRG_NO, menu, null);
+                cache.Set(menu.PRG_NO, menu, policy);
             }
             mw.Stop();
             Console.WriteLine(mw.MemorySizeChangeInKB);
-            Console.Read();
+            sh.Stop();
+            Console.WriteLine("sh.Elapsed.Milliseconds:" + sh.Elapsed.Milliseconds);
+        }
+
+        private static void GetCacheMeasure(ObjectCache cache)
+        {
+            System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
+            sh.Start();
+            foreach (dynamic item in cache)
+            {
+
+            }
+            sh.Stop();
+            Console.WriteLine("GetCacheMeasure-Milliseconds:" + sh.Elapsed.Milliseconds);
         }
     }
 
@@ -83,20 +128,5 @@ namespace CacheMemoryMeasureLab
         }
     }
 
-    public partial class UserMenuInfo
-    {
-        public string PRG_NO { get; set; }
-        public string PRG_NAME { get; set; }
-        public string PRG_TYPE { get; set; }
-        public string PRG_AREA { get; set; }
-        public string MVC_CTRL { get; set; }
-        public string MVC_ACT { get; set; }
-        public string ENT_POINT { get; set; }
-        public string PARAM_VAL { get; set; }
-        public int ORDERNUM { get; set; }
-        public string UP_PRGNO { get; set; }
 
-
-
-    }
 }
