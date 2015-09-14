@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CacheMemoryMeasureLab
 {
+    [ProtoBuf.ProtoContract]
     [Serializable]
     public partial class UserMenuInfo
     {

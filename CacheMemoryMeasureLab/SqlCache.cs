@@ -10,6 +10,21 @@ namespace CacheMemoryMeasureLab
 {
     /// <summary>
     /// https://github.com/kimx/sqlcache
+    /// CREATE TABLE [dbo].[Cache](
+    ///  [Key] [nvarchar](250) NOT NULL,
+    ///  [Value] [varbinary](max) NOT NULL,
+    ///  [Created] [datetime]
+    ///  NOT NULL,
+    ///  [LastAccess] [datetime]
+    ///  NOT NULL,
+    ///  [SlidingExpirationTimeInMinutes] [int]
+    ///  NULL,
+    ///  [AbsoluteExpirationTime]
+    ///  [datetime]
+    ///  NULL,
+    ///  [ObjectType]
+    ///  [nvarchar](250) NOT NULL
+    /// ) ON[PRIMARY]
     /// </summary>
     public class SqlCache : ObjectCache
     {
@@ -41,23 +56,35 @@ namespace CacheMemoryMeasureLab
             this.tableName = tableName;
         }
 
-        private static byte[] Serialize(object value)
+        static byte[] Serialize(object o)
         {
-            IFormatter formatter = new BinaryFormatter();
-            MemoryStream stream = new MemoryStream();
-            formatter.Serialize(stream, value);
-            byte[] serializedObj = stream.GetBuffer();
-            stream.Close();
-            return serializedObj;
+
+            BinaryFormatter binaryFormatter = new BinaryFormatter();
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                binaryFormatter.Serialize(memoryStream, o);
+                byte[] objectDataAsStream = memoryStream.ToArray();
+                return objectDataAsStream;
+            }
         }
 
-        private static object Deserialize(byte[] binaryObj)
+        //private static object Deserialize(byte[] binaryObj)
+        //{
+        //    IFormatter formatter = new BinaryFormatter();
+        //    MemoryStream stream = new MemoryStream(binaryObj);
+        //    var obj = formatter.Deserialize(stream);
+        //    stream.Close();
+        //    return obj;
+        //}
+
+        private static object Deserialize(byte[] stream)
         {
-            IFormatter formatter = new BinaryFormatter();
-            MemoryStream stream = new MemoryStream(binaryObj);
-            var obj = formatter.Deserialize(stream);
-            stream.Close();
-            return obj;
+            BinaryFormatter binaryFormatter = new BinaryFormatter();
+            using (MemoryStream memoryStream = new MemoryStream(stream))
+            {
+                var result = binaryFormatter.Deserialize(memoryStream);
+                return result;
+            }
         }
 
         private void InsertOrUpdateEntry(string key, object value, CacheItemPolicy policy)

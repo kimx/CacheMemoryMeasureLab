@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
@@ -6,55 +7,100 @@ using System.Text;
 using System.Threading.Tasks;
 namespace CacheMemoryMeasureLab
 {
+    /// <summary>
+    ///  static int perUserCacheCount = 100;
+    ///  static int onlineUsers = 2000;
+    /// ======================OnPremise-Begin=================================
+    ///CacheName:On-Premise,MemorySizeChangeInKB:0KB
+    ///CacheName:On-Premise,MemorySizeChangeInKB:33,647KB
+    ///CacheName:On-Premise,Set-Milliseconds:568
+    ///CacheName:On-Premise,Get-Milliseconds:131
+    ///======================OnPremise-End=================================
+    ///======================RedisCacheLab-Begin=================================
+    ///CacheName:RedisCache,MemorySizeChangeInKB:0KB
+    ///CacheName:RedisCache,MemorySizeChangeInKB:6KB
+    ///CacheName:RedisCache,Set-Milliseconds:18011
+    ///CacheName:RedisCache,Get-Milliseconds:17202
+    ///======================RedisCacheLab-End=================================
+    ///======================RedisCacheLab-Begin=================================
+    ///CacheName:RedisCacheProtobuf,MemorySizeChangeInKB:0KB
+    ///CacheName:RedisCacheProtobuf,MemorySizeChangeInKB:14KB
+    ///CacheName:RedisCacheProtobuf,Set-Milliseconds:13815
+    ///CacheName:RedisCacheProtobuf,Get-Milliseconds:12794
+    ///======================RedisCacheLab-End=================================
+    /// </summary>
     class Program
     {
+        static int perUserCacheCount = 100;
+        static int onlineUsers = 1;
+        static RedisCacheManager redisManager = new RedisCacheManager();
         /// <summary>
         /// 100 menu及2000user 約26mb
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            MeasureMemory(MemoryCache.Default);
-            MonitorCache();
-            //GetCacheMeasure(MemoryCache.Default);
-
-            //MeasureMemoryBySql();
+          //  OnPremiseLab();
+            redisManager.Clear();
+            //RedisCacheLab();
+            //  RedisCacheProtobufLab();
+            //   SqlCacheLab();
             Console.Read();
         }
 
-        private static void MeasureMemoryBySql()
+        #region Lab Method
+        static void OnPremiseLab()
         {
+            Console.WriteLine("======================OnPremise-Begin=================================");
+            MeasureSetMemoryAndTime("On-Premise", MemoryCache.Default);
+            MeasureGetTime("On-Premise", MemoryCache.Default);
+            Console.WriteLine("======================OnPremise-End=================================");
+
+        }
+
+        static void RedisCacheLab()
+        {
+            Console.WriteLine("======================RedisCacheLab-Begin=================================");
+            var redisCache = redisManager.Cache;
+            MeasureSetMemoryAndTimeByRedis("RedisCache", redisCache);
+            MeasureGetTimeByRedis("RedisCache", redisCache);
+            Console.WriteLine("======================RedisCacheLab-End=================================");
+        }
+        static void RedisCacheProtobufLab()
+        {
+
+            Console.WriteLine("======================RedisCacheLab-Begin=================================");
+            var redisCache = redisManager.Cache;
+            MeasureSetMemoryAndTimeByRedisProtobuf("RedisCacheProtobuf", redisCache);
+            MeasureGetTimeByRedisProtobuf("RedisCacheProtobuf", redisCache);
+            Console.WriteLine("======================RedisCacheLab-End=================================");
+        }
+        static void SqlCacheLab()
+        {
+            Console.WriteLine("======================SqlCacheLab-Begin=================================");
             string connStr = "Data Source=KIM-MSI\\KIMSSQLSERVER;Initial Catalog=MVWDataBase;User ID=sa;Password=mis123;MultipleActiveResultSets=True";
             var sqlCache = new SqlCache(connStr);
-            MeasureMemory(sqlCache);
-            GetCacheMeasure(sqlCache);
-
+            MeasureSetMemoryAndTime("SqlCache", sqlCache);
+            MeasureGetTime("SqlCache", sqlCache);
+            Console.WriteLine("======================SqlCacheLab-End=================================");
 
         }
 
-        private static void MonitorCache()
-        {
-            while (true)
-            {
-                Console.WriteLine(MemoryCacheMonitor.IsInMaintenanceMode());
-                System.Threading.Thread.Sleep(1000);
-            }
-        }
 
-        private static void MeasureMemory(ObjectCache cache)
+        #endregion
+
+        #region MeasureMethod
+        /// <summary>
+        /// 測量寫入的時間及記憶體
+        /// </summary>
+        /// <param name="cache"></param>
+        private static void MeasureSetMemoryAndTime(string cacheName, ObjectCache cache)
         {
             System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
             sh.Start();
-            int perUserCacheCount = 100;
-            int onlineUsers = 20;
             MemWatch mw = new MemWatch();
-
-            List<UserMenuInfo> menus = new List<UserMenuInfo>();
-            for (int i = 0; i < perUserCacheCount * onlineUsers; i++)
-            {
-                menus.Add(new UserMenuInfo { PRG_NO = i.ToString("00000"), PRG_AREA = "SysCore", PRG_NAME = "Amend Purchase Order", UP_PRGNO = "1000000" });
-            }
-            Console.WriteLine(mw.MemorySizeChangeInKB);
+            List<UserMenuInfo> menus = GetTestData();
+            Console.WriteLine(string.Format("CacheName:{0},MemorySizeChangeInKB:{1}", cacheName, mw.MemorySizeChangeInKB));
             mw.Start();
             CacheItemPolicy policy = new CacheItemPolicy();
             policy.AbsoluteExpiration = new DateTimeOffset(DateTime.Now.AddDays(1));
@@ -63,22 +109,129 @@ namespace CacheMemoryMeasureLab
                 cache.Set(menu.PRG_NO, menu, policy);
             }
             mw.Stop();
-            Console.WriteLine(mw.MemorySizeChangeInKB);
+            Console.WriteLine(string.Format("CacheName:{0},MemorySizeChangeInKB:{1}", cacheName, mw.MemorySizeChangeInKB));
             sh.Stop();
-            Console.WriteLine("sh.Elapsed.Milliseconds:" + sh.Elapsed.Milliseconds);
+            Console.WriteLine(string.Format("CacheName:{0},Set-Milliseconds:{1}", cacheName, sh.ElapsedMilliseconds));
+
         }
 
-        private static void GetCacheMeasure(ObjectCache cache)
+        /// <summary>
+        /// 測量讀取的時間
+        /// </summary>
+        /// <param name="cache"></param>
+        private static void MeasureGetTime(string cacheName, ObjectCache cache)
         {
             System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
             sh.Start();
             foreach (dynamic item in cache)
             {
-
             }
             sh.Stop();
-            Console.WriteLine("GetCacheMeasure-Milliseconds:" + sh.Elapsed.Milliseconds);
+            Console.WriteLine(string.Format("CacheName:{0},Get-Milliseconds:{1}", cacheName, sh.ElapsedMilliseconds));
+
         }
+
+        /// <summary>
+        /// 測量寫入的時間及記憶體
+        /// </summary>
+        /// <param name="cache"></param>
+        private static void MeasureSetMemoryAndTimeByRedis(string cacheName, IDatabase cache)
+        {
+            System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
+
+            sh.Start();
+            MemWatch mw = new MemWatch(true);
+            List<UserMenuInfo> menus = GetTestData();
+            Console.WriteLine(string.Format("CacheName:{0},MemorySizeChangeInKB:{1}", cacheName, mw.MemorySizeChangeInKB));
+            mw.Start();
+            foreach (var menu in menus)
+            {
+                cache.Set("OP-" + menu.PRG_NO, menu, TimeSpan.FromDays(1));
+            }
+            mw.Stop();
+            Console.WriteLine(string.Format("CacheName:{0},MemorySizeChangeInKB:{1}", cacheName, mw.MemorySizeChangeInKB));
+            sh.Stop();
+            Console.WriteLine(string.Format("CacheName:{0},Set-Milliseconds:{1}", cacheName, sh.ElapsedMilliseconds));
+
+        }
+
+        /// <summary>
+        /// 測量讀取的時間
+        /// </summary>
+        /// <param name="cache"></param>
+        private static void MeasureGetTimeByRedis(string cacheName, IDatabase cache)
+        {
+            System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
+            sh.Start();
+            foreach (string key in redisManager.GetAllKeys())
+            {
+                if (key.StartsWith("OP-"))
+                {
+                    object t = cache.Get(key);
+                }
+            }
+            sh.Stop();
+            Console.WriteLine(string.Format("CacheName:{0},Get-Milliseconds:{1}", cacheName, sh.ElapsedMilliseconds));
+
+        }
+
+        /// <summary>
+        /// 測量寫入的時間及記憶體
+        /// </summary>
+        /// <param name="cache"></param>
+        private static void MeasureSetMemoryAndTimeByRedisProtobuf(string cacheName, IDatabase cache)
+        {
+            System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
+            sh.Start();
+            MemWatch mw = new MemWatch(true);
+            List<UserMenuInfo> menus = GetTestData();
+            Console.WriteLine(string.Format("CacheName:{0},MemorySizeChangeInKB:{1}", cacheName, mw.MemorySizeChangeInKB));
+            mw.Start();
+            foreach (var menu in menus)
+            {
+                cache.SetProtobuf("PF-" + menu.PRG_NO, menu, TimeSpan.FromDays(1));
+            }
+            mw.Stop();
+            Console.WriteLine(string.Format("CacheName:{0},MemorySizeChangeInKB:{1}", cacheName, mw.MemorySizeChangeInKB));
+            sh.Stop();
+            Console.WriteLine(string.Format("CacheName:{0},Set-Milliseconds:{1}", cacheName, sh.ElapsedMilliseconds));
+
+        }
+
+        /// <summary>
+        /// 測量讀取的時間
+        /// </summary>
+        /// <param name="cache"></param>
+        private static void MeasureGetTimeByRedisProtobuf(string cacheName, IDatabase cache)
+        {
+            System.Diagnostics.Stopwatch sh = new System.Diagnostics.Stopwatch();
+            sh.Start();
+            foreach (string key in redisManager.GetAllKeys())
+            {
+                if (key.StartsWith("PF-"))
+                {
+                    UserMenuInfo t = cache.GetProtobuf<UserMenuInfo>(key);
+                }
+            }
+            sh.Stop();
+            Console.WriteLine(string.Format("CacheName:{0},Get-Milliseconds:{1}", cacheName, sh.ElapsedMilliseconds));
+
+        }
+
+
+        private static List<UserMenuInfo> GetTestData()
+        {
+            List<UserMenuInfo> menus = new List<UserMenuInfo>();
+            for (int i = 0; i < perUserCacheCount * onlineUsers; i++)
+            {
+                menus.Add(new UserMenuInfo { PRG_NO = i.ToString("00000000"), PRG_AREA = "SysCore", PRG_NAME = "Amend Purchase Order", UP_PRGNO = "1000000" });
+            }
+
+            return menus;
+        }
+        #endregion
+
+
     }
 
     class MemWatch
