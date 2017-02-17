@@ -1,0 +1,12 @@
+﻿
+@{
+    ViewBag.Title = "PubSub";
+}
+
+<h2>Index</h2>
+<a href="@Url.Action("PubSubGetValue")" class="btn btn-default">Get</a>
+<a href="@Url.Action("PubSubSetValue")" class="btn btn-default">Set</a>
+<a href="@Url.Action("PubSubClear")" class="btn btn-default">Clear</a>
+<h3>PubSub : @ViewBag.PubSub </h3>
+<h3>SubscribePid : @ViewBag.SubscribePid </h3>
+<h3>SubscribeNoticeCount : @ViewBag.SubscribeNoticeCount </h3>

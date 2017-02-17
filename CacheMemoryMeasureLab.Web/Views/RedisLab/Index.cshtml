@@ -1,0 +1,11 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+<a href="@Url.Action("GetValue")" class="btn btn-default">Get</a>
+<a href="@Url.Action("SetValue")" class="btn btn-default">Set</a>
+<h3>BeginConn : @ViewBag.BeginConn </h3>
+<h3>EndConn : @ViewBag.EndConn </h3>
+<h3>Value : @ViewBag.Value </h3>
