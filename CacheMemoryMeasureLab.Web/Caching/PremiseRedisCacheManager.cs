@@ -5,10 +5,19 @@ using System.Web;
 
 namespace CacheMemoryMeasureLab.Web
 {
+    /// <summary>
+    /// 第一版原型,使用timestamp,ps:不使用,因為更好的機制為PubSub
+    /// </summary>
     public class PremiseRedisCacheManager : ICacheManager
     {
         RedisCacheManager RedisCache;
         MemoryCacheManager MemoryCache;
+
+        public int CurrentCacheTime
+        {
+            get; set;
+        }
+
         public PremiseRedisCacheManager()
         {
             this.RedisCache = new RedisCacheManager();

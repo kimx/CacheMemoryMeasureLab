@@ -5,6 +5,7 @@ using System.Web;
 
 namespace CacheMemoryMeasureLab.Web
 {
+
     public static class CacheExtensions
     {
         public const int DefaultCacheTime = 1440;//24 hr
@@ -29,9 +30,10 @@ namespace CacheMemoryMeasureLab.Web
             {
                 try
                 {
+                    cacheManager.CurrentCacheTime = cacheTime;
                     return cacheManager.Get<T>(key);
                 }
-                catch (Exception ex)//如果直接使用Redis Cache所作的錯誤處理機制
+                catch (Exception ex)//針對使用Redis Cache所作的錯誤處理機制
                 {
                     //1.Notify Exception Process
 
@@ -42,7 +44,6 @@ namespace CacheMemoryMeasureLab.Web
             else
             {
                 var result = acquire();
-                //if (result != null)
                 cacheManager.Set(key, result, cacheTime);
                 return result;
             }

@@ -11,6 +11,10 @@ namespace CacheMemoryMeasureLab.Web
     /// </summary>
     public partial class PerRequestCacheManager : ICacheManager
     {
+        public int CurrentCacheTime
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Ctor

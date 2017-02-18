@@ -175,6 +175,8 @@
     <Compile Include="BinaryHelper.cs" />
     <Compile Include="Caching\CacheExtensions.cs" />
     <Compile Include="Caching\ExecuteRetryer.cs" />
+    <Compile Include="Caching\PubSubMemoryRedisCacheManager.cs" />
+    <Compile Include="Controllers\PubSubMemoryRedisController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\RedisLabController.cs" />
     <Compile Include="Controllers\RedisPerRequestController.cs" />
@@ -234,6 +236,7 @@
     <Content Include="Views\RedisLab\Premise.cshtml" />
     <Content Include="Views\RedisLab\PubSub.cshtml" />
     <Content Include="Views\RedisPerRequest\Index.cshtml" />
+    <Content Include="Views\PubSubMemoryRedis\Index.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

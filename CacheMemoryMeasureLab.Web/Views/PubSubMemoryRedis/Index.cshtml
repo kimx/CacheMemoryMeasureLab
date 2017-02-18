@@ -1,9 +1,11 @@
 ﻿
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "PubSubMemoryRedis";
 }
 
-<h2>Index</h2>
+<h2>PubSubMemoryRedis</h2>
 <a href="@Url.Action("GetValue")" class="btn btn-default">Get</a>
 <a href="@Url.Action("SetValue")" class="btn btn-default">Set</a>
+<a href="@Url.Action("Clear")" class="btn btn-default">Clear</a>
+
 <h3>Value : @ViewBag.Value </h3>

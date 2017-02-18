@@ -5,8 +5,18 @@ using System.Web;
 
 namespace CacheMemoryMeasureLab.Web
 {
+    /// <summary>
+    /// 在整個CacheManager的實作Pattern主要為以Get為主，取不到才自己作Set,
+    /// 此Pattern主要要注意的是在PubSubMemoryCacheManager及PubSubMemoryRedisCacheManager的的架構下
+    /// 對於Cache資料的異動，不能用Set，要透過Remove的方式讓多台主機同步
+    /// </summary>
     public interface ICacheManager
     {
+        /// <summary>
+        /// For在Get時需要更新Cache用，目前用在PubSubMemoryRedisCacheManager
+        /// </summary>
+        int CurrentCacheTime { get; set; }
+
         /// <summary>
         /// Gets or sets the value associated with the specified key.
         /// </summary>
@@ -54,6 +64,15 @@ namespace CacheMemoryMeasureLab.Web
         /// Clear all cache data
         /// </summary>
         void Clear(Action<string, object> removingItemCallBack);
+
+        ///// <summary>
+        ///// 用來在取值後,需要馬上Set回Cache的方法
+        ///// </summary>
+        ///// <typeparam name="T"></typeparam>
+        ///// <param name="key"></param>
+        ///// <param name="cacheTime"></param>
+        ///// <returns></returns>
+        //T Get<T>(string key, int cacheTime);
     }
 
 }

@@ -19,6 +19,11 @@ namespace CacheMemoryMeasureLab.Web
     /// </summary>
     public class RedisCacheManager : ICacheManager
     {
+        public int CurrentCacheTime
+        {
+            get; set;
+        }
+
         ExecuteRetryer Retryer;
         private static Lazy<ConnectionMultiplexer> redisInstance = new Lazy<ConnectionMultiplexer>(() =>
         {
