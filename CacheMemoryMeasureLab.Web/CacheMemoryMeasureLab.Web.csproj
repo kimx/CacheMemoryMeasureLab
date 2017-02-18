@@ -172,19 +172,23 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
-    <Compile Include="CacheExtensions.cs" />
+    <Compile Include="BinaryHelper.cs" />
+    <Compile Include="Caching\CacheExtensions.cs" />
+    <Compile Include="Caching\ExecuteRetryer.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\RedisLabController.cs" />
+    <Compile Include="Controllers\RedisPerRequestController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="ICacheManager.cs" />
-    <Compile Include="MemoryCacheManager.cs" />
+    <Compile Include="Caching\ICacheManager.cs" />
+    <Compile Include="Caching\MemoryCacheManager.cs" />
     <Compile Include="Models\MovieModel.cs" />
-    <Compile Include="PremiseRedisCacheManager.cs" />
-    <Compile Include="PubSubRedisCacheManager.cs" />
+    <Compile Include="Caching\PerRequestCacheManager.cs" />
+    <Compile Include="Caching\PremiseRedisCacheManager.cs" />
+    <Compile Include="Caching\PubSubMemoryCacheManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RedisCacheManager.cs" />
+    <Compile Include="Caching\RedisCacheManager.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +199,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="readme.html" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
@@ -228,6 +233,7 @@
     <Content Include="Views\RedisLab\Index.cshtml" />
     <Content Include="Views\RedisLab\Premise.cshtml" />
     <Content Include="Views\RedisLab\PubSub.cshtml" />
+    <Content Include="Views\RedisPerRequest\Index.cshtml" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

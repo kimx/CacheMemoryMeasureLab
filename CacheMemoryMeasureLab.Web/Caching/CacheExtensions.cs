@@ -27,7 +27,17 @@ namespace CacheMemoryMeasureLab.Web
         {
             if (cacheManager.IsSet(key))
             {
-                return cacheManager.Get<T>(key);
+                try
+                {
+                    return cacheManager.Get<T>(key);
+                }
+                catch (Exception ex)//如果直接使用Redis Cache所作的錯誤處理機制
+                {
+                    //1.Notify Exception Process
+
+                    //2.Keep Server Normal
+                    return acquire(); ;
+                }
             }
             else
             {

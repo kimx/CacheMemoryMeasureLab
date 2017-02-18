@@ -11,13 +11,13 @@ namespace CacheMemoryMeasureLab.Web.Controllers
     {
         ICacheManager RedisCacheManager;
         ICacheManager PremiseRedisCacheManager;
-        PubSubRedisCacheManager PubSubRedisCacheManager;
+        PubSubMemoryCacheManager PubSubMemoryCacheManager;
         string dbPath = "";
         public RedisLabController()
         {
             RedisCacheManager = new RedisCacheManager();
             PremiseRedisCacheManager = new PremiseRedisCacheManager();
-            PubSubRedisCacheManager = new PubSubRedisCacheManager();
+            PubSubMemoryCacheManager = new PubSubMemoryCacheManager();
         }
 
         // GET: RedisLab
@@ -73,14 +73,12 @@ namespace CacheMemoryMeasureLab.Web.Controllers
         public ActionResult PubSub()
         {
             ViewBag.PubSub = TempData["PubSub"];
-            ViewBag.SubscribeNoticeCount = PubSubRedisCacheManager.SubscribeNoticeCount;
-            ViewBag.SubscribePid = PubSubRedisCacheManager.SubscribePid;
             return View();
         }
 
         public ActionResult PubSubGetValue()
         {
-            TempData["PubSub"] = PubSubRedisCacheManager.Get<DateTime>("PubSub", () =>
+            TempData["PubSub"] = PubSubMemoryCacheManager.Get<DateTime>("PubSub", () =>
             {
                 dbPath = Server.MapPath("~/App_Data/db.txt");
                 var v = System.IO.File.ReadAllText(dbPath);
@@ -92,7 +90,7 @@ namespace CacheMemoryMeasureLab.Web.Controllers
         public ActionResult PubSubSetValue()
         {
             var v = DateTime.Now;
-            PubSubRedisCacheManager.Update("PubSub", v, 10);
+            PubSubMemoryCacheManager.Update("PubSub", v, 10);
             TempData["PubSub"] = v;
 
             dbPath = Server.MapPath("~/App_Data/db.txt");
@@ -102,7 +100,7 @@ namespace CacheMemoryMeasureLab.Web.Controllers
 
         public ActionResult PubSubClear()
         {
-            PubSubRedisCacheManager.Clear();
+            PubSubMemoryCacheManager.Clear();
             return RedirectToAction("PubSub");
         }
     }
