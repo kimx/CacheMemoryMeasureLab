@@ -62,8 +62,9 @@ namespace CacheMemoryMeasureLab.Web.Controllers
         public ActionResult PremiseSetValue()
         {
             var v = DateTime.Now;
-            PremiseRedisCacheManager.Update("Premise", v, 10);
-            TempData["Premise"] = v;
+            //PremiseRedisCacheManager.Update("Premise", v, 10);
+            //TempData["Premise"] = v;
+            PremiseRedisCacheManager.Remove("Premise");
 
             dbPath = Server.MapPath("~/App_Data/db.txt");
             System.IO.File.WriteAllText(dbPath, v.ToString("yyyy/MM/dd HH:mm:ss"));
@@ -90,8 +91,9 @@ namespace CacheMemoryMeasureLab.Web.Controllers
         public ActionResult PubSubSetValue()
         {
             var v = DateTime.Now;
-            PubSubMemoryCacheManager.Update("PubSub", v, 10);
-            TempData["PubSub"] = v;
+            PubSubMemoryCacheManager.Remove("PubSub");//照目前底層架構寫法,不更新,用移除的,讓取的時候重讀
+        //    PubSubMemoryCacheManager.Update("PubSub", v, 10);
+          //  TempData["PubSub"] = v;
 
             dbPath = Server.MapPath("~/App_Data/db.txt");
             System.IO.File.WriteAllText(dbPath, v.ToString("yyyy/MM/dd HH:mm:ss"));

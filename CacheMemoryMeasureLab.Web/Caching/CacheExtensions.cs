@@ -50,7 +50,7 @@ namespace CacheMemoryMeasureLab.Web
         }
 
         /// <summary>
-        /// For PremiseRedis Stamp同步，Client不要直接叫用Set 要使用此方法
+        /// For PubSub及Premise同步用法，Client不要直接叫用Set 要使用此方法
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="cacheManager"></param>
